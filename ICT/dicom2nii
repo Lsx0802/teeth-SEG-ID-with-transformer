@@ -1,0 +1,34 @@
+import SimpleITK as sitk
+import os
+
+def dcm2nii(dicom_dir_,save_dir_):
+    if not os.path.exists(save_dir_):
+        os.mkdir(save_dir_)
+
+    series_ids = sitk.ImageSeriesReader.GetGDCMSeriesIDs(dicom_dir_)
+    # print(len(series_ids))
+
+    for idx_series_ids in range(len(series_ids)):
+        series_file_names = sitk.ImageSeriesReader.GetGDCMSeriesFileNames(dicom_dir_,series_ids[idx_series_ids])
+        series_reader = sitk.ImageSeriesReader()
+        series_reader.SetFileNames(series_file_names)
+        image = series_reader.Execute()
+        print(f'{idx_series_ids} spacing: {image.GetSpacing()}')
+
+        filename = '1.nii.gz'
+        save_path = os.path.join(save_dir_,filename)
+        sitk.WriteImage(image,save_path)
+
+path1='/home/sxli/project/teethtest/2010_04_20_NNTViewer&DICOM/DICOM/20100420_DICOM/'
+path2='./test_nii/'
+if os.path.exists(path2) ==False:
+    os.makedirs(path2)
+dcm2nii(path1,path2)
+
+path3='./test_nii/1.nii.gz'
+image=sitk.ReadImage(path3)
+image=sitk.GetArrayFromImage(image)
+image[image>200]=1
+image[image!=1]=0
+mask=sitk.GetImageFromArray(image)
+sitk.WriteImage(mask,'./test_nii/1_mask.nii.gz')
